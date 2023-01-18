@@ -1,5 +1,5 @@
 local name, env = ...;
-local Bar, db = env.bar, env.db;
+local Bar, db = env.Frame, env.db;
 ---------------------------------------------------------------
 
 Bar.CoverArt.Flash = function(self)
@@ -103,7 +103,7 @@ end
 
 local UpdateMicroButtonsParent = UpdateMicroButtonsParent;
 local function MoveMicroButtons(parent)
-	if env:Get('disablemicromenu') or (parent and parent:IsShown()) then
+	if env:GetValue('disablemicromenu') or (parent and parent:IsShown()) then
 		return
 	end
 	UpdateMicroButtonsParent(Menu)
@@ -113,7 +113,7 @@ hooksecurefunc('UpdateMicroButtonsParent', MoveMicroButtons)
 
 local oldParent;
 function Bar:MoveMicroButtons()
-	if env:Get('disablemicromenu') then
+	if env:GetValue('disablemicromenu') then
 		if oldParent then
 			Menu:SetParent(oldParent)
 			Menu:SetAlpha(1)

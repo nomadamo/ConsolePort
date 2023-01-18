@@ -362,7 +362,7 @@ end
 local function CreateMainShadowFrame(self)
 	-- Create this as a separate frame so that drop shadow doesn't overlay modifiers
 	-- NOTE: shadow is child of bar, not of button
-	local shadow = CreateFrame('Frame', nil, env.bar, 'CPUIActionButtonMainShadowTemplate')
+	local shadow = CreateFrame('Frame', nil, env.Frame, 'CPUIActionButtonMainShadowTemplate')
 	shadow:SetPoint('CENTER', self, 'CENTER', 0, -6)
 	return shadow
 end
@@ -464,7 +464,7 @@ end
 
 function HANDLE:UpdateAllBindings(bindings)
 	if bindings then
-		ClearOverrideBindings(env.bar)
+		ClearOverrideBindings(env.Frame)
 		if type(bindings) == 'table' then
 			for binding, cluster in pairs(Registry) do
 				self:UpdateClusterBindings(cluster, bindings[binding])
@@ -494,7 +494,7 @@ function HANDLE:SetEligbleForRebind(button, modifier, main)
 		}
 	end
 	if main then
-		env.bar:RegisterOverride(modifier..button.plainID, main:GetName())
+		env.Frame:RegisterOverride(modifier..button.plainID, main:GetName())
 	end
 	local disableQuickAssign = db('bindingDisableQuickAssign')
 	return 'custom', {
@@ -519,7 +519,7 @@ function HANDLE:SetXMLBinding(button, modifier, binding)
 end
 
 function HANDLE:SetActionBinding(button, modifier, actionID, main)
-	env.bar:RegisterOverride(modifier..button.plainID, main:GetName())
+	env.Frame:RegisterOverride(modifier..button.plainID, main:GetName())
 	return 'action', actionID
 end
 
@@ -536,7 +536,7 @@ function HANDLE:RefreshBinding(binding, cluster, button, modifier, main)
 
 	cluster:ConfigureSwapStates(modifier, button, stateType, stateID)
 	-- call an update on the button to reflect new binding
-	button:DisableDragNDrop(env:Get('disablednd'))
+	button:DisableDragNDrop(env:GetValue('disablednd'))
 	button:Execute(format([[
 		self:RunAttribute('UpdateState', '%s')
 		self:CallMethod('UpdateAction')
@@ -559,3 +559,5 @@ function HANDLE:UpdateClusterBindings(cluster, bindings)
 		end
 	end
 end
+
+env:RegisterSafeCallback('OnNewBindings', HANDLE.UpdateAllBindings, HANDLE)

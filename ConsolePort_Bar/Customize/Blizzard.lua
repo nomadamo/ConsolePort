@@ -2,7 +2,7 @@
 -- This code snippet hides and modifies the default action bars.
 
 local _, env = ...
-local Bar = env.bar
+local Bar = env.Frame;
 local red, green, blue = CPAPI.GetClassColor()
 
 do

@@ -4,7 +4,7 @@ local FadeIn, FadeOut = env.db.Alpha.FadeIn, env.db.Alpha.FadeOut;
 -------------------------------------------
 ---		Watch bar container
 -------------------------------------------
-local WBC = env.bar.WatchBarContainer
+local WBC = env.Frame.WatchBarContainer
 
 WBC.BGLeft = WBC:CreateTexture(nil, 'BACKGROUND')
 WBC.BGLeft:SetPoint('TOPLEFT')

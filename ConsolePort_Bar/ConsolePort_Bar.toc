@@ -13,14 +13,19 @@
 ## X-WoWI-ID: 23536
 ## X-Wago-ID: LvNAYjNo
 
+## SavedVariables: ConsolePort_BarIcons
 ## SavedVariablesPerCharacter: ConsolePort_BarSetup
 
 Libs\LibUIDropDownMenu.lua
 
 Frame.xml
 
-Core\Lookup.lua
+Core\Database.lua
+
+Data\Assets.lua
+
 Core\Cluster.lua
+Core\Secure.lua
 Core\Bar.lua
 Core\Config.lua
 

@@ -1,29 +1,14 @@
 ---------------------------------------------------------------
 local _, env = ...; local db = env.db;
 ---------------------------------------------------------------
+local Bar = env.Frame;
 local cfg
 
-local Bar = Mixin(env.bar, CPAPI.SecureEnvironmentMixin)
 local Clusters = env.libs.clusters;
-local state, now = ConsolePort:GetActionPageDriver()
 
 local BAR_MIN_WIDTH    = 1105
 local BAR_MAX_SCALE    = 1.6
 local BAR_FIXED_HEIGHT = 140
-
--- Set up action bar
----------------------------------------------------------------
-
-Bar:SetAttribute('actionpage', now)
-Bar:SetFrameRef('Cursor', ConsolePortRaidCursor)
-Bar:SetFrameRef('Mouse', ConsolePortInteract)
-
-Bar:Execute([[
-	bindings = newtable()
-	bar = self
-	cursor = self:GetFrameRef('Cursor')
-	mouse  = self:GetFrameRef('Mouse')
-]])
 
 -- Opacity handling
 ---------------------------------------------------------------
@@ -38,7 +23,7 @@ end
 
 db:RegisterCallback('OnHintsClear', function(self)
 	self.forceFadeOut = false;
-	if not env:Get('hidebar') or InCombatLockdown() then
+	if not env:GetValue('hidebar') or InCombatLockdown() then
 		self:FadeIn(self:GetAlpha())
 	end
 end, Bar)
@@ -57,44 +42,6 @@ function Bar:ToggleMovable(enableMouseDrag, enableMouseWheel)
 	self:EnableMouse(not not enableMouseDrag)
 	self:EnableMouseWheel(not not enableMouseWheel)
 end
-
--- Override bindings
----------------------------------------------------------------
-function Bar:UnregisterOverrides()
-	self:Execute([[
-		bindings = wipe(bindings)
-		self:ClearBindings()
-	]])
-end
-
-function Bar:UpdateOverrides()
-	self:Execute([[
-		self:RunAttribute('ApplyBindings')
-		local state = self:GetAttribute('state') or '';
-		self:SetAttribute('state', state)
-		control:ChildUpdate('state', state)
-		mouse:RunAttribute('OnBindingsChanged')
-	]])
-end
-
-function Bar:RegisterOverride(key, button)
-	self:Execute(format([[
-		bindings['%s'] = '%s'
-	]], key, button))
-end
-
-function Bar:OnOverrideSet(key)
-	db.Input:HandleConflict(self, false, key)
-end
-
-function Bar:OnNewBindings(bindings)
-	self:UnregisterOverrides()
-	Clusters:UpdateAllBindings(bindings)
-	self:UpdateOverrides()
-end
-
-env.db:RegisterSafeCallback('OnNewBindings', Bar.OnNewBindings, Bar)
-env.db.Pager:RegisterHeader(Bar, true)
 
 -- Event handler
 ---------------------------------------------------------------
@@ -121,7 +68,7 @@ function Bar:ADDON_LOADED(name)
 		if not ConsolePort_BarSetup then
 			ConsolePort_BarSetup = env:GetDefaultSettings()
 		end
-		env:CreateManifest()
+		env:LoadAssets()
 		env:SetConfig(ConsolePort_BarSetup, false)
 		self:UnregisterEvent('ADDON_LOADED')
 		self.ADDON_LOADED = nil
@@ -306,39 +253,6 @@ end
 db:RegisterSafeCallback('Gamepad/Active', function(self) self:OnLoad(env.cfg) end, Bar)
 db:RegisterSafeCallback('OnActionBarConfigChanged', Bar.OnLoad, Bar)
 
---------------------------
----- Secure functions ----
---------------------------
-for name, script in pairs({
-	['_onhide'] = [[
-		self:ClearBindings()
-	]],
-	['_onshow'] = [[
-		self:RunAttribute('ApplyBindings')
-		if PlayerInCombat() or ( not self:GetAttribute('hidesafe') ) then
-			self:CallMethod('FadeIn')
-		end
-		mouse:RunAttribute('OnBindingsChanged')
-	]],
-	['_onstate-modifier'] = [[
-		self:SetAttribute('state', newstate)
-		control:ChildUpdate('state', newstate)
-		cursor:RunAttribute('ActionPageChanged')
-	]],
-	['_onstate-page'] = env.db.Pager:GetPageResponse() .. [[
-		self:SetAttribute('actionpage', newstate)
-		control:ChildUpdate('actionpage', newstate)
-	]],
-	['ApplyBindings'] = [[
-		for key, button in pairs(bindings) do
-			self:SetBindingClick(false, key, button, 'ControllerInput')
-			self:CallMethod('OnOverrideSet', key)
-		end
-	]];
---------------------------
-}) do Bar:SetAttribute(name, script) end
---------------------------
-
 Bar:SetScript('OnEvent', Bar.OnEvent)
 Bar:SetScript('OnMouseWheel', Bar.OnMouseWheel)
 for _, event in ipairs({
@@ -352,13 +266,3 @@ for _, event in ipairs({
 ---------------------------------------------------------------
 Bar.Buttons = {}
 Bar.Elements = {}
-
--- State drivers
----------------------------------------------------------------
-RegisterStateDriver(Bar, 'page', state)
-RegisterStateDriver(Bar, 'modifier',
-	'[mod:alt,mod:ctrl,mod:shift] ALT-CTRL-SHIFT-;' ..
-	'[mod:alt,mod:ctrl] ALT-CTRL-;' ..
-	'[mod:alt,mod:shift] ALT-SHIFT-;' ..
-	'[mod:ctrl,mod:shift] CTRL-SHIFT-;' ..
-	'[mod:alt] ALT-; [mod:ctrl] CTRL-; [mod:shift] SHIFT-; ')

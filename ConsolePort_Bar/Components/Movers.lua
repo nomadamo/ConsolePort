@@ -3,7 +3,7 @@ local _, env = ...; local db = env.db;
 -- Mover
 ---------------------------------------------------------------
 local Mover = {};
-env.Movers = CreateFramePool('Frame', env.bar);
+env.Movers = CreateFramePool('Frame', env.Frame);
 
 local function FadeConfig(func, time, toAlpha)
 	local config = env.config and env.config.Config;
@@ -31,12 +31,12 @@ function Mover:OnDragStop()
 	self:UnregisterAllEvents()
 	self:SetScript('OnEvent', nil)
 
-	local layout = env:Get('layout')
-	local barX, barY = env.bar:GetCenter()
+	local layout = env:GetValue('layout')
+	local barX, barY = env.Frame:GetCenter()
 	local point, x, y = 'CENTER', button:GetCenter()
 
 	layout[button.plainID].point = {point, floor(x - barX), floor(y - barY)};
-	env:Set('layout', layout)
+	env:SetValue('layout', layout)
 end
 
 function Mover:OnUpdate()
@@ -73,7 +73,7 @@ end
 function env:ShowMovers()
 	self.Movers:ReleaseAll()
 	local mixer = self.db.table.mixin;
-	for i, cluster in ipairs(self.bar.Buttons) do
+	for i, cluster in ipairs(self.Frame.Buttons) do
 		local mover, newObj = self.Movers:Acquire()
 		if newObj then
 			mixer(mover, Mover)

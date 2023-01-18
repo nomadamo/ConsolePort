@@ -40,7 +40,10 @@ end
 ---------------------------------------------------------------
 function ConsolePort:GetActionPageDriver()
 	local pager = db.Pager;
-	return pager:GetPageCondition(), pager:GetCurrentPage()
+	return
+		pager:GetCurrentPage(),
+		pager:GetPageCondition(),
+		pager:GetPageResponse();
 end
 
 ---------------------------------------------------------------

@@ -82,7 +82,7 @@ end
 function Shared:CollectCharacterGarbage()
 	local charactersToCollect = {};
 	for character, data in pairs(self.Data) do
-		local meta = data.Meta;
+		local meta = rawget(data, 'Meta')
 		data.Meta = nil;
 		if not next(data) then
 			charactersToCollect[character] = true;

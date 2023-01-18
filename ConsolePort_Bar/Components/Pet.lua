@@ -1,6 +1,6 @@
 local addOn, env = ...;
 ---------------------------------------------------------------
-local Bar, Lib, db = env.bar, env.libs.button, env.db;
+local Bar, Lib, db = env.Frame, env.libs.button, env.db;
 ---------------------------------------------------------------
 local FadeIn, FadeOut = db.Alpha.FadeIn, db.Alpha.FadeOut;
 ---------------------------------------------------------------
@@ -82,7 +82,7 @@ function Pet:FadeIn()
 end
 
 function Pet:FadeOut()
-	if env:Get('disablepetfade') then return end
+	if env:GetValue('disablepetfade') then return end
 	for i, button in ipairs(self.Buttons) do
 		if not button.onCooldown then
 			FadeOut(button, 0.2, button:GetAlpha(), 0)

@@ -22,13 +22,13 @@ function env:SaveConfig(cfg)
 	env.db.Shared:SavePlayerData('Bar', cfg, true)
 end
 
-function env:Get(key)
+function env:GetValue(key)
 	if self.cfg then
 		return self.cfg[key]
 	end
 end
 
-function env:Set(key, ...)
+function env:SetValue(key, ...)
 	if not self.cfg then
 		self:SetConfig({})
 	end
@@ -151,13 +151,13 @@ function Option:Construct(objType, data, newObj, widgets, get)
 		if get then
 			controller = baseObject(get())
 		else
-			controller = baseObject(env:Get(data.cvar))
+			controller = baseObject(env:GetValue(data.cvar))
 		end
 		local constructor = widgets[data.cvar] or widgets[controller:GetType()]
 		if constructor then
 			constructor(self, data.cvar, data, controller, data.desc, data.note)
 			controller:SetCallback(function(...)
-				env:Set(data.cvar, ...)
+				env:SetValue(data.cvar, ...)
 				self:OnValueChanged(...)
 			end)
 		end
@@ -170,7 +170,7 @@ function Option:Construct(objType, data, newObj, widgets, get)
 end
 
 function Option:Get()
-	return env:Get(self.variableID)
+	return env:GetValue(self.variableID)
 end
 
 function Options:OnLoad()
@@ -226,7 +226,7 @@ function Options:DrawOptions()
 			widget:SetScript('OnClick', function(self, button)
 				self:Uncheck()
 				if (button == 'RightButton') then
-					env:Set(data.cvar, nil)
+					env:SetValue(data.cvar, nil)
 					return self:OnValueChanged(self:Get())
 				end
 				script(self, button)
@@ -332,7 +332,7 @@ function Field:GetText()
 end
 
 function Field:Get()
-	local clusterData = env:Get('layout')[self.binding];
+	local clusterData = env:GetValue('layout')[self.binding];
 	local cvar = self.cvar;
 	if (cvar == 'enabled') then
 		return clusterData ~= nil;
@@ -353,7 +353,7 @@ function Field:Get()
 end
 
 function Cluster:IsEnabled()
-	return env:Get('layout')[self.binding] ~= nil;
+	return env:GetValue('layout')[self.binding] ~= nil;
 end
 
 function Cluster:ConstructOnClick()
@@ -377,7 +377,7 @@ function Cluster:SetPendingConstruct()
 end
 
 function Cluster:Recompile()
-	local layout = env:Get('layout') or {};
+	local layout = env:GetValue('layout') or {};
 	local set = layout[self.binding] or {};
 
 	for obj, data in pairs(Blueprint) do
@@ -398,7 +398,7 @@ function Cluster:Recompile()
 		end
 	end
 	layout[self.binding] = set;
-	env:Set('layout', layout)
+	env:SetValue('layout', layout)
 end
 
 function Cluster:OnLoad()
@@ -488,7 +488,7 @@ function Clusters:DrawOptions()
 	local enabled, disabled = {}, {};
 	for binding in ConsolePort:GetBindings() do
 		if device:IsButtonValidForBinding(binding) then
-			if env:Get('layout')[binding] then
+			if env:GetValue('layout')[binding] then
 				enabled[binding] = true;
 			else
 				disabled[binding] = true;
@@ -596,7 +596,7 @@ end
 
 db:RegisterCallback('OnConfigLoaded', function(localEnv, config, env)
 	localEnv.config, localEnv.panel, L = env, config, env.L;
-	env.Bars = config:CreatePanel({
+	env.Frames = config:CreatePanel({
 		name  = BINDING_HEADER_ACTIONBAR;
 		mixin = Config;
 		scaleToParent = true;

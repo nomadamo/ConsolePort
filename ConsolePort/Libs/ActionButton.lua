@@ -1239,6 +1239,10 @@ function UpdateCooldown(self)
 	local start, duration, enable = self:GetCooldown()
 	local charges, maxCharges, chargeStart, chargeDuration = self:GetCharges()
 
+	if not start or not duration then
+		return
+	end
+
 	self.cooldown:SetDrawBling(self.cooldown:GetEffectiveAlpha() > 0.5)
 
 	if not self.isMainButton and not self.isGlowing then
@@ -1440,6 +1444,14 @@ local function getSpellInfo(func, spellID, ...)
 	end
 end
 
+local function safeSetSpellTooltip(input)
+	local spellId = getSpellId(input)
+	if spellId and IsSpellKnownOrOverridesKnown(spellId) then
+		return GameTooltip:SetSpellByID(spellId)
+	end
+	return false
+end
+
 Spell.HasAction               = function(self) return true end
 Spell.GetActionText           = function(self) return (GetSpellInfo(self._state_action)) end
 Spell.GetTexture              = function(self) return (GetSpellTexture(self._state_action)) end
@@ -1452,7 +1464,7 @@ Spell.IsAutoRepeat            = function(self) return getSpellInfo(IsAutoRepeatS
 Spell.IsUsable                = function(self) return IsUsableSpell(self._state_action) end
 Spell.IsConsumableOrStackable = function(self) return IsConsumableSpell(self._state_action) end
 Spell.IsUnitInRange           = function(self, unit) return getSpellInfo(IsSpellInRange, self._state_action, unit) end
-Spell.SetTooltip              = function(self) return GameTooltip:SetSpellByID(getSpellId(self._state_action)) end
+Spell.SetTooltip              = function(self) return safeSetSpellTooltip(self._state_action) end
 Spell.GetSpellId              = function(self) return getSpellId(self._state_action) end
 
 -----------------------------------------------------------

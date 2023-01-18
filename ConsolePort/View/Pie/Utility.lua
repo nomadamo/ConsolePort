@@ -8,6 +8,7 @@ local Utility = Mixin(CPAPI.EventHandler(ConsolePortUtilityToggle, {
 	'QUEST_WATCH_LIST_CHANGED';
 	'UPDATE_BINDINGS';
 	CPAPI.IsRetailVersion and 'UPDATE_EXTRA_ACTIONBAR';
+	CPAPI.IsRetailVersion and 'QUEST_DATA_LOAD_RESULT';
 }), CPAPI.AdvancedSecureMixin)
 local Button = CreateFromMixins(CPActionButton);
 ---------------------------------------------------------------
@@ -638,6 +639,15 @@ function Utility:AutoAssignAction(info, preferredIndex)
 	return self:AddUniqueAction(DEFAULT_SET, preferredIndex, info)
 end
 
+
+Utility.QuestWatchers = {};
+
+function Utility:QUEST_DATA_LOAD_RESULT(questID, success)
+	if success and self.QuestWatchers[questID] then
+
+	end
+end
+
 function Utility:GetItemForQuestID(questID)
 	local logIndex = CPAPI.GetQuestLogIndexForQuestID(questID)
 	return logIndex and GetQuestLogSpecialItemInfo(logIndex)
@@ -702,16 +712,12 @@ function Utility:ParseObservedQuestIDs()
 	end
 end
 
-function Utility:AddAllQuestWatchItems()
+function Utility:RefreshQuestWatchItems()
+	self:ClearActionByKey(DEFAULT_SET, 'questID')
 	for i=1, CPAPI.GetNumQuestWatches() do
 		local questID = C_QuestLog.GetQuestIDForQuestWatchIndex(i)
 		self:ToggleQuestWatchItem(questID, true)
 	end
-end
-
-function Utility:RefreshQuestWatchItems()
-	self:ClearActionByKey(DEFAULT_SET, 'questID')
-	self:AddAllQuestWatchItems()
 end
 
 function Utility:ToggleExtraActionButton(enabled)
@@ -749,6 +755,7 @@ function Utility:ToggleZoneAbilities()
 	end
 end
 
+-- Classic quest items
 function Utility:ToggleInventoryQuestItems(hideAnnouncement)
 	if CPAPI.IsRetailVersion then return end
 	local function getItemID(input) return input:match('item:(%d+)') end;
@@ -937,7 +944,9 @@ end
 function Button:OnFocus()
 	self:SetChecked(true)
 	GameTooltip_SetDefaultAnchor(GameTooltip, self)
-	self:SetTooltip()
+	if not self:SetTooltip() then
+		GameTooltip:SetText(self:GetAttribute(self:GetAttribute('type')))
+	end
 	local use = Utility:GetTooltipUsePrompt()
 	local remove = Utility:GetTooltipRemovePrompt()
 	if use then

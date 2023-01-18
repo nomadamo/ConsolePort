@@ -166,14 +166,8 @@ function HANDLER:SetFrame(owner)
 	self:SetParent(owner)
 	self:SetAllPoints(owner)
 
-	local state, mod = owner:GetAttribute('state');
-	if owner.isMainButton then
-		mod = state;
-	elseif state:match('ALT') then
-		mod = 'ALT-'..owner.mod;
-	else
-		mod = owner.mod;
-	end
+	local state = owner:GetAttribute('state');
+	local mod = owner.isMainButton and state or state:match('ALT') and 'ALT-'..owner.mod or owner.mod;
 
 	self.btn = owner.plainID;
 	self.mod = mod;

@@ -166,6 +166,7 @@ for _, modifier in ipairs(GamepadAPI.Modsims) do
 			SetBinding(mod..value, nil)
 		end
 		SaveBindings(GetCurrentBindingSet())
+		db:TriggerEvent('OnModifierChanged', modifier, value)
 	end, GamepadAPI)
 end
 
