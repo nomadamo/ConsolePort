@@ -18,6 +18,7 @@ local BindingInfoMixin, BindingInfo = {}, {
 		macro        = function(id) return GetMacroInfo(id) and GetMacroInfo(id) .. ' ('..MACRO..')' end;
 		mount        = function(id) return C_MountJournal.GetMountInfoByID(id) end;
 		summonmount  = function(id) return C_MountJournal.GetMountInfoByID(id) end;
+		toy		    = function(id) return C_ToyBox.GetToyInfo(id) end;
 		summonpet    = function(id) return (C_PetJournal.GetPetInfoTableByPetID(id) or {}).name or TOOLTIP_BATTLE_PET end;
 		flyout       = function(id) return GetFlyoutInfo(id) end;
 		equipmentset = function(id) return tostring(id)..' ('..BAG_FILTER_EQUIPMENT..')' end;
@@ -398,6 +399,24 @@ function BindingInfo:RefreshCollections()
 				pickup  = function(id) return PickupSpell(getMountSpellID(id)) end;
 				tooltip = function(self, id) GameTooltip.SetSpellByID(self, getMountSpellID(id)) end;
 				texture = function(id) return (select(4, GetCompanionInfo('MOUNT', id))) end;
+			})
+		end
+	end
+
+	-- Toy Box
+	if CPAPI.IsRetailVersion then
+		local toybox = {};
+		for i=1, C_ToyBox.GetNumLearnedDisplayedToys() do
+			local currentToy = (select(1, C_ToyBox.GetToyFromIndex(i)))
+			toybox[#toybox+1] = currentToy;
+		end
+
+		if next(toybox) then
+			self:AddCollection(toybox, {
+				name    = TOY_BOX;
+				pickup  = function(id) if C_ToyBox.IsToyUsable(id) then return C_ToyBox.PickupToyBoxItem(id) end; end;
+				tooltip = function(self, id) GameTooltip.SetToyByItemID(self, id) end;
+				texture = function(id) return select(3, CPAPI.GetToyInfo(id)) end;
 			})
 		end
 	end

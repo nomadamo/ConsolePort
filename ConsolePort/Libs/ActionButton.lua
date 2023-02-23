@@ -274,7 +274,7 @@ function SetupSecureSnippets(button)
 			self:RunAttribute('UpdateState', state)
 			-- send a notification to the insecure code
 			self:CallMethod('ButtonContentsChanged', state, 'empty', nil)
-		end			
+		end
 		if self:GetID() > 0 then
 			action = action + ((self:GetAttribute('actionpage') - 1) * 12)
 		end
@@ -1508,11 +1508,11 @@ Macro.IsUsable               = function(self) return true end
 -----------------------------------------------------------
 --- Toy Button
 Toy.HasAction                = function(self) return true end
-Toy.GetTexture               = function(self) return select(3, C_ToyBox.GetToyInfo(self._state_action)) end
-Toy.GetCooldown              = function(self) return getItemCd(self._state_action) end
-Toy.IsUnitInRange            = function(self, unit) return nil end
-Toy.SetTooltip               = function(self) return GameTooltip:SetToyByItemID(self._state_action) end
-
+Toy.GetTexture               = function(self) return select(3, CPAPI.GetToyInfo(getItemId(self._state_action))) end
+Toy.GetCooldown              = function(self) return getItemCd(getItemId(self._state_action)) end
+Toy.IsUnitInRange            = function(self, unit) return IsItemInRange(self._state_action, unit) end
+Toy.SetTooltip               = function(self) return GameTooltip:SetToyByItemID(getItemId(self._state_action)) end
+Toy.IsUsable                 = function(self) return CPAPI.IsToyUsable(getItemId(self._state_action)) end
 -----------------------------------------------------------
 --- Pet Button
 Pet.HasAction                = function(self) return true end

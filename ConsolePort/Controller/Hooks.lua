@@ -41,6 +41,9 @@ function Hooks:ProcessInterfaceCursorEvent(button, down, node)
 		elseif self.dressupItem then
 			Hooknode.OnDressupButtonModifiedClick(node, 'LeftButton')
 			return true;
+		elseif self.toy then
+			Hooknode.OnDressupButtonModifiedClick(node, 'LeftButton')
+			return true;
 		elseif self.itemLocation then
 			db.ItemMenu:SetItem(self.itemLocation:GetBagAndSlot())
 		elseif self.bagLocation then
@@ -63,7 +66,7 @@ function Hooks:ProcessInterfaceClickEvent(script, node)
 				return true;
 			end
 		elseif self:IsModifiedClick() then
-			-- HACK: identify a container slot button
+		-- HACK: identify a container slot button
 			if (node.UpdateTooltip and node.UpdateTooltip == ContainerFrameItemButton_OnUpdate) then
 				Hooknode.OnContainerButtonModifiedClick(node, 'LeftButton')
 				return true;
@@ -81,13 +84,13 @@ end
 -- Special handling for container item buttons
 ---------------------------------------------------------------
 do  local IsWidget, GetID, GetParent, GetScript =
-		C_Widget.IsFrameWidget, UIParent.GetID, UIParent.GetParent, UIParent.GetScript;
+	C_Widget.IsFrameWidget, UIParent.GetID, UIParent.GetParent, UIParent.GetScript;
 
 	local TryIdentifyContainerSlot = CPAPI.IsRetailVersion and function(node)
-		return node.GetSlotAndBagID == ContainerFrameItemButtonMixin.GetSlotAndBagID;
-	end or function(node)
-		return node.UpdateTooltip == ContainerFrameItemButton_OnEnter;
-	end
+			return node.GetSlotAndBagID == ContainerFrameItemButtonMixin.GetSlotAndBagID;
+		end or function(node)
+			return node.UpdateTooltip == ContainerFrameItemButton_OnEnter;
+		end
 
 	local TryIdentifyContainerBag = function(node)
 		return GetScript(node, 'OnEnter') == ContainerFramePortraitButton_OnEnter and GetID(node) ~= 0;
@@ -244,9 +247,9 @@ do -- Tooltip hooking
 			if ( GetItemSpell(link) and numOwned > 0 ) then
 				Hooks:SetPendingActionToUtilityRing(self, owner, {
 					type = 'item',
-					item = link,
-					link = link
-				});
+						item = link,
+						link = link
+					});
 			elseif isEquippable and not isEquipped then
 				Hooks:SetPendingDressupItem(self, link);
 			elseif isEquippable and isEquipped then
@@ -259,7 +262,7 @@ do -- Tooltip hooking
 		local owner = self:GetOwner()
 		if not InCombatLockdown() and db.Cursor:IsCurrentNode(owner) then
 			if owner.OnSpecialClick then return end;
-			
+
 			local name, spellID = self:GetSpell()
 			if spellID and not IsPassiveSpell(spellID) then
 				local isKnown = IsSpellKnownOrOverridesKnown(spellID) or IsPlayerSpell(spellID)
@@ -276,29 +279,54 @@ do -- Tooltip hooking
 		end
 	end
 
+	local function OnTooltipSetToy(self)
+		local owner = self:GetOwner()
+		if not InCombatLockdown() and db.Cursor:IsCurrentNode(owner) then
+			local tooltipData = self:GetTooltipData()
+				if (tooltipData.lines[2].leftText == 'Toy') and tooltipData.id then
+				local toyID = tooltipData.id
+				local toyInfo = CPAPI.GetToyInfo(toyID)
+				local toyLink = CPAPI.GetToyLink(toyID);
+				if CPAPI.IsToyUsable(toyID) then
+					Hooks:SetPendingActionToUtilityRing(
+						self,
+						owner,
+						{
+							type = 'item',
+							item = toyLink,
+							link = toyLink,
+						}
+					)
+				end
+			end
+		end
+	end
+
 	local function OnTooltipSetMount(self, info)
 		local spellID = select(2, CPAPI.GetMountInfoByID(info.id))
 		local isKnown = select(11, CPAPI.GetMountInfoByID(info.id))
 		if isKnown and spellID then
 			Hooks:SetPendingSpellMenu(self, spellID)
 		end
-	end	
+	end
 
 	if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall then
 		TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, OnTooltipSetItem)
 		TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Mount, OnTooltipSetMount)
 		TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Spell, OnTooltipSetSpell)
+		TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Toy, OnTooltipSetToy)
 	else
 		GameTooltip:HookScript('OnTooltipSetItem', OnTooltipSetItem)
 		GameTooltip:HookScript('OnTooltipSetSpell', OnTooltipSetSpell)
+		GameTooltip:HookScript('SetToyFromItemID', OnTooltipSetToy)
 	end
 
 	GameTooltip:HookScript('OnHide', function()
-		if Hooks.pendingAction then
-			db.Utility:ClearPendingAction()
-			Hooks.pendingAction = nil;
-		end
-	end)
+			if Hooks.pendingAction then
+				db.Utility:ClearPendingAction()
+				Hooks.pendingAction = nil;
+			end
+		end)
 end
 
 ---------------------------------------------------------------
@@ -313,35 +341,14 @@ end
 
 function Hooknode:OnContainerButtonModifiedClick(...)
 	WrappedExecute(ContainerFrameItemButton_OnModifiedClick, {
-		IsModifiedClick = function(action)
-			return db.Gamepad:GetModifierHeld(GetModifiedClick(action))
-		end;
-	}, self, ...)
+			IsModifiedClick = function(action)
+				return db.Gamepad:GetModifierHeld(GetModifiedClick(action))
+			end;
+		}, self, ...)
 end
 
 function Hooknode:OnDressupButtonModifiedClick()
 	WrappedExecute(HandleModifiedItemClick, {
-		IsModifiedClick = function(action)
-			if (action == 'CHATLINK') then
-				return false;
-			elseif (action == 'DRESSUP') then
-				return true;
-			end
-		end;
-	}, Hooks.dressupItem)
-	Hooks.dressupItem = nil;
-end
-
-function Hooknode:OnInventoryButtonModifiedClick()
-	WrappedExecute(PaperDollItemSlotButton_OnModifiedClick, {
-		IsModifiedClick = function(action)
-			if (action == 'EXPANDITEM') then
-				return true;
-			end
-		end;
-	}, self)
-	if not GetSocketItemInfo() then
-		WrappedExecute(HandleModifiedItemClick, {
 			IsModifiedClick = function(action)
 				if (action == 'CHATLINK') then
 					return false;
@@ -349,6 +356,27 @@ function Hooknode:OnInventoryButtonModifiedClick()
 					return true;
 				end
 			end;
-		}, GetInventoryItemLink('player', self:GetID()))
+		}, Hooks.dressupItem)
+		Hooks.dressupItem = nil;
+end
+
+function Hooknode:OnInventoryButtonModifiedClick()
+	WrappedExecute(PaperDollItemSlotButton_OnModifiedClick, {
+			IsModifiedClick = function(action)
+				if (action == 'EXPANDITEM') then
+					return true;
+				end
+			end;
+		}, self)
+	if not GetSocketItemInfo() then
+		WrappedExecute(HandleModifiedItemClick, {
+				IsModifiedClick = function(action)
+					if (action == 'CHATLINK') then
+						return false;
+					elseif (action == 'DRESSUP') then
+						return true;
+					end
+				end;
+			}, GetInventoryItemLink('player', self:GetID()))
 	end
 end

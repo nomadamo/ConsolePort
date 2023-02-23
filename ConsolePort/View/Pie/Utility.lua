@@ -539,6 +539,7 @@ end
 ---------------------------------------------------------------
 Utility.KindAndActionMap = {
 	action = function(data) return data.action end;
+	toy    = function(data)	return data.item end,
 	item   = function(data) return data.item end;
 	pet    = function(data) return data.action end;
 	spell  = function(data) return data.spell end;
@@ -550,6 +551,9 @@ function Utility:GetKindAndAction(info)
 	return info.type, self.KindAndActionMap[info.type](info);
 end
 
+local function getItemId(input)
+	return input:match("^item:(%d+)")
+end
 ---------------------------------------------------------------
 -- Link map
 ---------------------------------------------------------------
@@ -581,6 +585,9 @@ Utility.SecureHandlerMap = {
 	action = function(action)
 		return {type = 'action', action = action};
 	end;
+	toy = function(toyID)
+		return {type = "item", item = toyID, link = CPAPI.GetToyLink(getItemId(toyID))}
+	end,
 	item = function(itemID, itemLink)
 		return {type = 'item', item = itemLink or itemID, link = itemLink};
 	end;
