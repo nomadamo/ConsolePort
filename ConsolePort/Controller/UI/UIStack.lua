@@ -162,6 +162,7 @@ do local frames, visible, buffer, hooks, forbidden, obstructors = {}, {}, {}, {}
 			visible[frame] = nil;
 			frames[frame]  = nil;
 		end
+    self:UpdateFrames()
 	end
 
 	function Stack:ForbidFrame(frame)
@@ -201,7 +202,7 @@ do local frames, visible, buffer, hooks, forbidden, obstructors = {}, {}, {}, {}
 		if not isLocked then
 			self:UpdateFrameTracker()
 			db('Cursor'):SetEnabled(next(visible))
-		end
+    end
 	end
 
 	-- Returns a stack of visible frames.
@@ -228,6 +229,7 @@ function Stack:HideFrame(frame, ignoreAlpha)
 	frame:SetAlpha(ignoreAlpha and frame:GetAlpha() or 0)
 	frame:ClearAllPoints()
 	self:ForbidFrame(frame)
+  self:UpdateFrames()
 end
 
 ---------------------------------------------------------------
@@ -313,6 +315,20 @@ do db:Save('Stack/Registry', 'ConsolePortUIStack')
 		end
 	end
 
+  function Stack:CleanUpFrames()
+    for addon, frames in pairs(self.Registry) do
+      local frameCount = 0
+        for frameName, _ in pairs(frames) do
+          if frameName then
+            frameCount = frameCount + 1
+          end
+        end
+        if frameCount == 0 then
+          self.Registry[addon] = nil
+        end
+    end
+  end
+
 	function Stack:OnDataLoaded()
 		db:Load('Stack/Registry', 'ConsolePortUIStack')
 		GenerateDefaultSet(self)
@@ -340,7 +356,6 @@ do db:Save('Stack/Registry', 'ConsolePortUIStack')
 		if C_Widget.IsFrameWidget(frame) and not Stack:IsFrameVisibleToCursor(frame) then
 			if Stack:TryRegisterFrame(_, frame:GetName(), true) then
 				Stack:AddFrame(frame)
-				Stack:UpdateFrames()
 			end
 		end
 	end
@@ -350,7 +365,6 @@ do db:Save('Stack/Registry', 'ConsolePortUIStack')
 		if not Stack:IsFrameVisibleToCursor(frame) then
 			if not poolFrames[frame] then
 				Stack:AddFrame(frame)
-				Stack:UpdateFrames()
 				poolFrames[frame] = true;
 			end
 		end
@@ -405,6 +419,7 @@ do  local managers = {[UIPanelWindows] = true, [UISpecialFrames] = false, [UIMen
 				watchers[frame] = nil;
 			end
 		end
+    self:CleanUpFrames()
 	end
 
 	function Stack:AddFrameWatcher(frame)

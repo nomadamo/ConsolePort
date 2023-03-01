@@ -2,9 +2,7 @@ local _, db = ...;
 local HELP_STRING, SLASH_FUNCTIONS = 'Usage: |cFFFFFFFF/consoleport|r |cFF00FFFF%s|r |cFF00FF00%s|r';
 local DOCU_STRING = '  |cFF00FFFF%s|r |cFF00FF00%s|r \n- |cFFFFFFFF%s|r';
 local CONFIG_ADDON_NAME = 'ConsolePort_Config';
-local NO_FRAMES_RETURN_STRING = '|cFFFFFFFFNo frames found.|r';
-local FRAMES_PER_ADDON_RETURN_STRING = '|cFFFFFFFFFrames found for|r |cFF00FFFF%s|r';
-local FRAMES_RETURN_STRING = '|cFFFFFFFFFrames found.|r';
+local FRAMES_RETURN_STRING = '|cFFFFFFFF%s|r |cFF00FFFF%s|r';
 ---------------------------------------------------------------
 -- Process slash command
 ---------------------------------------------------------------
@@ -111,22 +109,17 @@ SLASH_FUNCTIONS = {
 		CPAPI.Log(HELP_STRING, 'addframe', 'addonName frameName')
 	end;
 	listframes = function(owner)
+		local stack = db.Stack;
+		local sQuery = stack:FindFrames(owner)
 
-		local sQuery = db.Stack:FindFrames(owner)
-
-		if sQuery and owner then
-			CPAPI.Log(FRAMES_PER_ADDON_RETURN_STRING, owner)
+		if sQuery and (owner ~= 'consoleport') then
+			CPAPI.Log(FRAMES_RETURN_STRING, (owner and 'Frames found for') or 'Frames found', (owner and owner..':')  or ':')
 			for k, v in pairs(sQuery) do
-				CPAPI.Log('  %s - %s', k, v)
+				CPAPI.Log('   %s - %s', k, v)
 			end
-		elseif sQuery then
-				CPAPI.Log(FRAMES_RETURN_STRING)
-			for k, v in pairs(sQuery) do
-				CPAPI.Log('  %s - %s', k, v)
-			end
-		else
-				CPAPI.Log(NO_FRAMES_RETURN_STRING)
+			return
 		end
+		CPAPI.Log(FRAMES_RETURN_STRING, (owner and 'No frames found for') or 'No Frames found', (owner and owner..'.') or '.')
 	end;
 	removeframe = function(owner, frame)
 		if owner and frame then
@@ -135,7 +128,6 @@ SLASH_FUNCTIONS = {
 				local stack = db.Stack;
 				if stack:TryRemoveFrame(owner, frame) then
 					stack:RemoveFrame(_G[frame])
-					stack:UpdateFrames()
 					return CPAPI.Log('Frame %s was removed from %s.', frame, owner)
 				end
 			else
