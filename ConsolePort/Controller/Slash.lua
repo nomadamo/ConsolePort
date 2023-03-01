@@ -2,6 +2,9 @@ local _, db = ...;
 local HELP_STRING, SLASH_FUNCTIONS = 'Usage: |cFFFFFFFF/consoleport|r |cFF00FFFF%s|r |cFF00FF00%s|r';
 local DOCU_STRING = '  |cFF00FFFF%s|r |cFF00FF00%s|r \n- |cFFFFFFFF%s|r';
 local CONFIG_ADDON_NAME = 'ConsolePort_Config';
+local NO_FRAMES_RETURN_STRING = '|cFFFFFFFFNo frames found.|r';
+local FRAMES_PER_ADDON_RETURN_STRING = '|cFFFFFFFFFrames found for|r |cFF00FFFF%s|r';
+local FRAMES_RETURN_STRING = '|cFFFFFFFFFrames found.|r';
 ---------------------------------------------------------------
 -- Process slash command
 ---------------------------------------------------------------
@@ -109,50 +112,22 @@ SLASH_FUNCTIONS = {
 	end;
 	listframes = function(owner)
 
-		local stack = db.Stack
-		local registry = stack.Registry
-		local addonFrameCount = 0
-		local addonsFound = 0
+		local sQuery = db.Stack:FindFrames(owner)
 
-		if owner and owner ~= "ConsolePort" then
-			local frameSet = stack:GetRegistrySet(owner)
-			if frameSet then
-				CPAPI.Log("Frames for %s :", owner)
-				for frameName, enabled in pairs(frameSet) do
-					addonFrameCount = addonFrameCount + 1
-					if enabled then
-						CPAPI.Log('%s. %s', addonFrameCount, frameName)
-					else
-						CPAPI.Log('%s. %s - Ignored', addonFrameCount, frameName)
-					end
-				end
-				if addonFrameCount == 0 then
-					CPAPI.Log('None')
-				end
-			else
-				CPAPI.Log("No frames for %s have been added.", owner)
+		if sQuery and owner then
+			CPAPI.Log(FRAMES_PER_ADDON_RETURN_STRING, owner)
+			for k, v in pairs(sQuery) do
+				CPAPI.Log('  %s - %s', k, v)
+			end
+		elseif sQuery then
+				CPAPI.Log(FRAMES_RETURN_STRING)
+			for k, v in pairs(sQuery) do
+				CPAPI.Log('  %s - %s', k, v)
 			end
 		else
-			if registry then
-				for addonName, frames in pairs(registry) do
-					if addonName ~= "ConsolePort" then
-						for _, _ in pairs(frames) do
-							addonFrameCount = addonFrameCount + 1
-						end
-						if addonFrameCount > 0 then
-							addonsFound = addonsFound + 1
-							CPAPI.Log("%s found for %s", addonFrameCount, addonName)
-						end
-					end
-				end
-				if addonsFound == 0 then
-					CPAPI.Log("No custom frames have been added.")
-				end
-			else
-				CPAPI.Log("No custom frames have been added.")
-			end
+				CPAPI.Log(NO_FRAMES_RETURN_STRING)
 		end
-	end,
+	end;
 	removeframe = function(owner, frame)
 		if owner and frame then
 			local loadable, reason = select(4, GetAddOnInfo(owner))

@@ -17,6 +17,15 @@ local Stack = db:Register('Stack', CPAPI.CreateEventHandler({'Frame', '$parentUI
 	Registry = {};
 }));
 
+local function GetIndex(table, value)
+	assert(value,'GetIndex(TABLE, VALUE)')
+	local returnIndex = {}
+	for k, v in pairs(table) do
+		returnIndex[v]=k
+	end
+	return returnIndex[value]
+end
+
 ---------------------------------------------------------------
 -- Externals:
 ---------------------------------------------------------------
@@ -109,6 +118,38 @@ do local frames, visible, buffer, hooks, forbidden, obstructors = {}, {}, {}, {}
 			return true
 		else
 			self:AddFrameWatcher(frame)
+		end
+	end
+
+	function Stack:FindFrames(addonName)
+		local tStack
+		local rStack = {}
+		if not addonName then
+			tStack = self:GetRegistry()
+			if tStack then
+				for addon, frameSet in pairs(tStack) do
+					if string.lower(addon) ~= 'consoleport' then
+						local frameCountPerAddon = 0
+						for _, _ in pairs(frameSet) do
+							frameCountPerAddon = frameCountPerAddon + 1
+						end
+						rStack[addon] = frameCountPerAddon
+					end
+				end
+				return rStack
+			end
+		else
+			if string.lower(addonName) ~= 'consoleport' and self:CheckRegistry(addonName) then
+				tStack = self:GetRegistrySet(addonName)
+				if tStack then
+					local frameCount = 0
+					for k, _ in pairs(tStack) do
+						frameCount = frameCount + 1
+						rStack[frameCount] = k
+					end
+					return rStack
+				end
+			end
 		end
 	end
 
@@ -251,6 +292,14 @@ do db:Save('Stack/Registry', 'ConsolePortUIStack')
 	function Stack:GetRegistrySet(name)
 		self.Registry[name] = self.Registry[name] or {};
 		return self.Registry[name];
+	end
+
+	function Stack:GetRegistry()
+		return self.Registry;
+	end
+
+	function Stack:CheckRegistry(name)
+		return self.Registry[name]
 	end
 
 	function Stack:TryRegisterFrame(set, name, state)
