@@ -17,15 +17,6 @@ local Stack = db:Register('Stack', CPAPI.CreateEventHandler({'Frame', '$parentUI
 	Registry = {};
 }));
 
-local function GetIndex(table, value)
-	assert(value,'GetIndex(TABLE, VALUE)')
-	local returnIndex = {}
-	for k, v in pairs(table) do
-		returnIndex[v]=k
-	end
-	return returnIndex[value]
-end
-
 ---------------------------------------------------------------
 -- Externals:
 ---------------------------------------------------------------
