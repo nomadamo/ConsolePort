@@ -118,16 +118,22 @@ do local frames, visible, buffer, hooks, forbidden, obstructors = {}, {}, {}, {}
 		if not addonName then
 			tStack = self:GetRegistry()
 			if tStack then
+        local numberOfAddonsWithFrames = 0
 				for addon, frameSet in pairs(tStack) do
 					if string.lower(addon) ~= 'consoleport' then
 						local frameCountPerAddon = 0
 						for _, _ in pairs(frameSet) do
 							frameCountPerAddon = frameCountPerAddon + 1
 						end
+            numberOfAddonsWithFrames = numberOfAddonsWithFrames + 1
 						rStack[addon] = frameCountPerAddon
 					end
 				end
-				return rStack
+        if numberOfAddonsWithFrames == 0 then
+          return nil
+        else
+				  return rStack
+        end
 			end
 		else
 			if string.lower(addonName) ~= 'consoleport' and self:CheckRegistry(addonName) then
@@ -162,6 +168,7 @@ do local frames, visible, buffer, hooks, forbidden, obstructors = {}, {}, {}, {}
 			visible[frame] = nil;
 			frames[frame]  = nil;
 		end
+    self:CleanUpFrames()
     self:UpdateFrames()
 	end
 
@@ -419,7 +426,6 @@ do  local managers = {[UIPanelWindows] = true, [UISpecialFrames] = false, [UIMen
 				watchers[frame] = nil;
 			end
 		end
-    self:CleanUpFrames()
 	end
 
 	function Stack:AddFrameWatcher(frame)

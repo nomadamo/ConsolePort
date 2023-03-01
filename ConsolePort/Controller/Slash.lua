@@ -112,14 +112,14 @@ SLASH_FUNCTIONS = {
 		local stack = db.Stack;
 		local sQuery = stack:FindFrames(owner)
 
-		if sQuery and (owner ~= 'consoleport') then
-			CPAPI.Log(FRAMES_RETURN_STRING, (owner and 'Frames found for') or 'Frames found', (owner and owner..':')  or ':')
+		if sQuery then
+			CPAPI.Log(FRAMES_RETURN_STRING, (owner and 'Frames found for') or 'Frames found', owner or ' ')
 			for k, v in pairs(sQuery) do
 				CPAPI.Log('   %s - %s', k, v)
 			end
 			return
 		end
-		CPAPI.Log(FRAMES_RETURN_STRING, (owner and 'No frames found for') or 'No Frames found', (owner and owner..'.') or '.')
+		CPAPI.Log(FRAMES_RETURN_STRING, (owner and 'No frames found for') or 'No frames found', owner or ' ')
 	end;
 	removeframe = function(owner, frame)
 		if owner and frame then
