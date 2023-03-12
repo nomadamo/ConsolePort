@@ -23,7 +23,7 @@ local MAX_BARS_VISIBLE = 2
 function WBC:SetTextLocked(isLocked)
 	if ( self.textLocked ~= isLocked ) then
 		self.textLocked = isLocked
-		self:UpdateBarVisibility() 
+		-- self:UpdateBarVisibility() 
 	end
 end
 
@@ -41,13 +41,13 @@ function WBC:IsTextLocked()
 	return self.textLocked
 end	
 
-function WBC:UpdateBarVisibility()
-	for i, bar in ipairs(self.bars) do
-		if(bar:ShouldBeVisible()) then
-			bar:UpdateTextVisibility()
-		end
-	end	
-end
+-- function WBC:UpdateBarVisibility()
+-- 	for i, bar in ipairs(self.bars) do
+-- 		if(bar:ShouldBeVisible()) then
+-- 			bar:UpdateTextVisibility()
+-- 		end
+-- 	end	
+-- end
 
 function WBC:SetBarAnimation(Animation)
 	for i, bar in ipairs(self.bars) do
@@ -81,20 +81,20 @@ end
 
 function WBC:SetBarSize(largeSize)
 	self.largeSize = largeSize 
-	self:UpdateBarsShown() 
+	-- self:UpdateBarsShown() 
 end
 
-function WBC:UpdateBarsShown()
-	local visibleBars = {}
-	for i, bar in ipairs(self.bars) do
-		if ( bar:ShouldBeVisible() ) then
-			table.insert(visibleBars, bar)
-		end
-	end
+-- function WBC:UpdateBarsShown()
+-- 	local visibleBars = {}
+-- 	for i, bar in ipairs(self.bars) do
+-- 		if ( bar:ShouldBeVisible() ) then
+-- 			table.insert(visibleBars, bar)
+-- 		end
+-- 	end
 		
-	table.sort(visibleBars, function(left, right) return left:GetPriority() < right:GetPriority() end)
-	self:LayoutBars(visibleBars) 
-end
+-- 	table.sort(visibleBars, function(left, right) return left:GetPriority() < right:GetPriority() end)
+-- 	self:LayoutBars(visibleBars) 
+-- end
 
 function WBC:HideStatusBars()
 	self.SingleBarSmall:Hide() 
@@ -200,18 +200,18 @@ function WBC:OnLoad()
 
 	self:RegisterUnitEvent('UNIT_LEVEL', 'player')
 	self:SetInitialBarSize()
-	self:UpdateBarsShown()
+	-- self:UpdateBarsShown()
 
 	self:SetScript('OnShow', self.OnShow)
-	self:SetScript('OnEvent', self.OnEvent)
+	-- self:SetScript('OnEvent', self.OnEvent)
 end
 
-function WBC:OnEvent(event)
-	if ( event == 'CVAR_UPDATE' ) then
-		self:UpdateBarVisibility()
-	end	
-	self:UpdateBarsShown() 
-end
+-- function WBC:OnEvent(event)
+-- 	if ( event == 'CVAR_UPDATE' ) then
+-- 		self:UpdateBarVisibility()
+-- 	end	
+-- 	self:UpdateBarsShown() 
+-- end
 
 function WBC:OnShow()
 	if env.cfg and env.cfg.watchbars then
@@ -252,10 +252,10 @@ function WBC:AddBarFromTemplate(frameType, template)
 		end
 	end)
 
-	bar:HookScript('OnShow', BarColorOverride)
-	hooksecurefunc(bar, 'SetBarColor', BarColorOverride)
+	-- bar:HookScript('OnShow', BarColorOverride)
+	-- hooksecurefunc(bar, 'SetColorRGB', BarColorOverride)
 
-	self:UpdateBarsShown()
+	-- self:UpdateBarsShown()
 	return bar
 end
 

@@ -68,9 +68,9 @@ function CPExpBarMixin:GetPriority()
 	return self.priority 
 end
 
-function CPExpBarMixin:ShouldBeVisible()
-	return not IsPlayerAtEffectiveMaxLevel() and not CPAPI.IsXPUserDisabled()
-end
+-- function CPExpBarMixin:ShouldBeVisible()
+-- 	return not IsPlayerAtEffectiveMaxLevel() and not CPAPI.IsXPUserDisabled()
+-- end
 
 function CPExpBarMixin:Update() 
 	local currXP = UnitXP("player")
@@ -345,10 +345,10 @@ function CPReputationBarMixin:UpdateCurrentText()
 	end
 end
 
-function CPReputationBarMixin:ShouldBeVisible()
-	local name, reaction, minFaction, maxFaction, value, factionID = GetWatchedFactionInfo()
-	return name ~= nil
-end
+-- function CPReputationBarMixin:ShouldBeVisible()
+-- 	local name, reaction, minFaction, maxFaction, value, factionID = GetWatchedFactionInfo()
+-- 	return name ~= nil
+-- end
 
 function CPReputationBarMixin:Update() 
 	local name, reaction, minBar, maxBar, value, factionID = GetWatchedFactionInfo()
